@@ -1,0 +1,80 @@
+---
+title: "DATA 607: Assignment 1"
+output: html_document
+date: "2024-09-08"
+author: Nakesha Fray
+---
+
+## Introduction
+
+For Assignment 1, the dataset I chose from Github was Hate Crimes (https://raw.githubusercontent.com/fivethirtyeight/data/master/hate-crimes/hate_crimes.csv), used in the article "Higher Rates Of Hate Crimes Are Tied To Income Inequality" by Maimuna Majumder:https://fivethirtyeight.com/features/higher-rates-of-hate-crimes-are-tied-to-income-inequality/. To provide some context, the author wanted to look at how hate crimes varied by state as well as how income by state predicted higher rates of hate crimes before and after the 2016 presidential election. Majumder used data collected by the FBI and the Southern Poverty Law Center, which both include self-reported, voluntary, and, publicly available hate crime data. 
+
+
+## Load in Libraries
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library (readr)
+library(tidyverse)
+
+```
+
+## Import the data (csv. file) from GitHub to R
+
+The hate_crime dataset has 51 observations (rows) and 12 variables (columns). 
+
+```{r hate_crimes}
+
+hate_crime<- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/hate-crimes/hate_crimes.csv")
+
+```
+
+## View Data
+
+Take a look at the data to make sure the variables are appropriately labeled.
+
+```{r glimpse of data}
+glimpse(hate_crime)
+
+hate_crime <- hate_crime %>%
+  rename(income_inequality = gini_index)
+
+```
+
+In the dataset, the variables include: state, median_household_income, share_unemployed_seasonal, share_population_in_metro_areas, share_population_with_high_school_degree, share_non_citizen, share_white_poverty, gini_index, share_non_white, share_voters_voted_trump, hate_crimes_per_100k_splc, and avg_hatecrimes_per_100k_fbi. These variables accurately describe the data it contains, therefore, we will leave the names, except for gini_index. Gini_index is income inequality measured by the gini index, we renamed gini_index to income_inequality.
+
+The main predictor is income inequality labeled as income_inequality and the outcome variable is hate crimes which is captured in two different variables:
+hate_crimes_per_100k_splc: Hate crimes per 100,000 population from 2016 after the election, collected by    the Southern Poverty Law Center
+avg_hatecrimes_per_100k_fbi: Hate crimes pe 100,000 population in 2015 before the election collected by the FBI.
+
+## Plot of Hate Crimes in 2015 vs. 2016 by State
+
+```{r Plot of Hate Crime}
+
+ggplot(data=hate_crime) +
+   aes(x=state, y=avg_hatecrimes_per_100k_fbi) +
+   geom_bar(stat="identity", fill="blue") + 
+  ggtitle("Hate Crimes per 100k in 2015 ") +
+  xlab("States in the US") + ylab("Average Hate Crimes per 100k") +
+  theme(axis.text.x = element_text(angle = 90))
+
+ggplot(data=hate_crime) +
+   aes(x=state, y=hate_crimes_per_100k_splc) +
+   geom_bar(stat="identity", fill="green") + 
+  ggtitle("Hate Crimes per 100k after 2016 Presidential Election") +
+   xlab("States in the US") + ylab("Average Hate Crimes per 100k") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+The graphs above are bar graphs of the average hate crimes per 100,000 population before and after the 2016 presidential election by state. We can see that most of the hate crimes in each state increased from 2015 to 2016.
+
+
+## Conclusion
+
+Majumder found that some states had far more hate crimes than others. Overall, the data showed that hate crimes increased after the 2016 election. To update the analysis and findings in the article, I would use a different source of data rather than the one from FBI and the Southern Poverty Law Center. While the FBI only collects prosecutable data, the Southern Poverty Law Center includes non-prosecutable hate crimes, which make the comparisons different. I would look at prosecutable and non-procsecutable data separately to see hows those trends changed pre- and post-election.
+
+Furthermore, since Majumder found that income inequality was associated with higher rates of hate crimes before and after the election. I would redo the regression technique used with current data to see how the trends of hate crimes continued into the 2020 election and to also check to see if income inequality was still a predictor. 
+
+
+
