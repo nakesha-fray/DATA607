@@ -1,0 +1,92 @@
+---
+title: "DATA607: Assignment 2"
+output: html_document
+author: Nakesha Fray
+date: "2024-09-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+
+```
+
+## Introduction 
+
+For this week's assignment, I connected to the "cunydata607sql.mysql.database.azure.com" database in SQL Workbench and created a table with 5 observations. I then connected the database to RStudio and loaded the data on to a dataframe. The table has 7 variables: name and 6 recently released movies. Each individual rated the movies they watched out of 5. The dataframe has some missing data since some individuals did not watch all 6 movies.
+
+Part 1: Build Table
+Part 2: Store data in SQL database
+
+A code was used to generate a password for the cunydata607sql.mysql.database.azure.com database using my CUNY SPS ID. 
+
+```{r sql password}
+
+# Load necessary libraries
+library(digest)     # For generating the hash
+library(clipr)      # For copying to clipboard
+
+# The string to hash
+input_string <- '23331211'
+
+# Generate the hash using SHA-256
+hash_hex <- digest(input_string, algo = "sha256", serialize = FALSE)
+
+# Declare a variable with only a quarter of the resulting hash
+quarter_hash <- substr(hash_hex, 1, nchar(hash_hex) %/% 4)
+
+# Save the result to the clipboard
+write_clip(quarter_hash, allow_non_interactive = TRUE)
+
+```
+
+## Connecting Database in SQL Workbench to R
+
+Part 3: Transfer data from SQL database to R dataframe
+
+Connect to R using my username, password, dbname, host, and port with RMySQL. Then accessing the tables and creating a dataframe of "movie" from the tibble. 
+
+```{r sql to r}
+library(RMySQL)
+
+mydb<- dbConnect(RMySQL::MySQL(), 
+                 user='nakesha.fray11',
+                 password='cb0413357786347f', 
+                 dbname ='nakesha.fray11', 
+                 host='cunydata607sql.mysql.database.azure.com',
+                 port = 3306)
+
+dbListTables(mydb)
+
+movie <- tbl(mydb, "movie")%>%
+  collect()
+
+movie
+```
+
+## Missing data
+
+Part 4: Missing data strategy
+
+For this dataframe, we could do mean imputations based on the values recorded by other individuals in the same variable. We would be assuming that individuals would have similar ratings for the same movies. We would calculate the mean of the each variable (movie) and then substitute that value in the missing items. 
+
+```{r - Mean Imputations}
+
+movie2 <- movie %>% 
+  clean_names() %>%
+ dplyr::mutate(io2 = as.numeric(inside_out_2),
+               io2 = ifelse(is.na(io2), mean(io2, na.rm = TRUE), io2))
+
+movie2$io2
+
+```
+
+
+This is an example of mean imputation. I first changed inside_out_2 to numeric, then I used an ifelse statement to calculate the mean and replace the NA values in the variable inside_out_2 (io2) with the mean, while leaving non-missing values the same. I used this approach because the ratings for each movies appears to be somewhat similar.
+
+## Conclusion
+
+I was able to load a dataframe from SQL Workbench to R and then use it to do an example of mean imputations in R. I would try to create a larger, more complex table in my SQL Workbench with more variables and  different data types in the future.
+
