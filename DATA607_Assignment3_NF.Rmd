@@ -1,0 +1,147 @@
+---
+title: "DATA607: Assignment 3"
+author: "Nakesha Fray"
+date: "2024-09-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library (readr)
+
+```
+
+## Introduction
+
+For this week's assignment, I provided examples of Normalization with First, Second, and Third Normal Form using fake data. I then used character manipulation to interpret expressions and used regular expressions to match different examples.
+
+## Normalization
+
+This is an example of First Normal Form (1NF) since we seperated blood pressure readings for each participant into systolic and diastolic. This way we do not have more than one value in each cell.
+
+```{r normalization 1}
+
+base_bp_notnorm <- data.frame(id=1001:1005,
+                      baseline_bp=c('143/93', '124 over 77', '98 over 60', '129/91', '110/70'))
+
+print(base_bp_notnorm)
+
+base_bp_norm <- data.frame(id=1001:1005,
+                      baseline_sys_bp=c(143, 124, 98, 129, 110),
+                      baseline_dia_bp=c(93, 77, 60, 91, 70))
+print(base_bp_norm)
+```
+
+This is an example of Second Normal Form (2NF) since the non-key attribute (item_price) is not dependent on the entire primary key which is customer_id and items they purchase. In order to put this is second normal form, the table must be split up into two tables. 
+
+```{r normalization 2}
+
+store <- data.frame(customer_id = c(1, 1, 2,3,3,3),
+                      items =c("Shampoo", 'Airpods', 'Toothpase', 'Laptop', 'Bedding Set', "Puzzle"),
+                      item_price=c('$8.38', '$199.99', '$5.29', '$589.99', '$79.00', "9.99"))
+
+print(store)
+
+#We will create two tables, one with customer ids and item purchased and the other table with items and their prices. 
+
+
+customer_purchase <- data.frame(customer_id = c(1,1,2,3,3,3),
+                      items =c("Shampoo", 'Airpods', 'Toothpase', 'Laptop', 'Bedding Set', "Puzzle"))
+
+item_prices <- data.frame(
+                      items =c("Shampoo", 'Airpods', 'Toothpase', 'Laptop', 'Bedding Set', "Puzzle"),
+                      item_price=c('$8.38', '$199.99', '$5.29', '$589.99', '$79.00', "$9.99"))
+
+#Customer Purchases Table
+print(customer_purchase)
+
+#Item Prices Table
+print(item_prices)
+```
+
+This is an example of Third Normal Form (3NF) since each non-key attribute must depend on the key, the whole key, and nothing but the key. In order to put this is third normal form, the table must be split up into two tables since the primary keys are patient_id and patient_name but test_cost does not depend on the whole primary key.
+
+```{r normalization 3NF}
+
+hospital <- data.frame(patient_id = c(1302,9293,1882,8900,3654),
+                    patient_name =c('Sam', 'Joe', 'Lisa', 'Nathan', 'Nora'),
+                    test=c('X-ray', 'Biopsy', 'MRI', 'Complete Blood Count (CBC)', 'Employer Drug Test'),
+                    test_cost=c('$300.00','$540.00', "350.00", "30.00", "$130.00" ))
+
+print(hospital)
+
+
+patient_test <- data.frame(patient_id = c(1302,9293,1882,8900,3654),
+                    patient_name =c('Sam', 'Joe', 'Lisa', 'Nathan', 'Nora'),
+                    test=c('X-ray', 'Biopsy', 'MRI', 'Complete Blood Count (CBC)', 'Employer Drug Test'))
+                    
+print(patient_test)
+
+
+test_cost <- data.frame(test=c('X-ray', 'Biopsy', 'MRI', 'Complete Blood Count (CBC)', 'Employer Drug Test'),
+                    test_cost=c('$300.00','$540.00', "350.00", "30.00", "$130.00" ))
+
+print(test_cost)
+
+```
+
+## Character Manipulation
+
+The CSV. with data on college majors was imported into R and then I used str_subset to find matches in the dataset "major" within the variable Major that had "DATA" or "STATISTICS" in it. The two pieces of the code returned a total of 3 Majors (1 for DATA and 2 for STATISTICS).
+
+
+```{r find-majors}
+
+majors<- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/college-majors/majors-list.csv")
+
+str_subset(majors$Major, pattern = "DATA")
+
+str_subset(majors$Major, pattern = "STATISTICS")
+
+```
+
+
+3. Describe, in words, what these expressions will match:
+
+```{r}
+#(.)\1\1 : The same character appearing three times. Some examples of this could be: "bbb" or "ccc"
+    
+#"(.)(.)\\2\\1" : The same two characters twice but the second time, it is backwards.
+str_subset(words, "(.)(.)\\2\\1")
+
+  
+#(..)\1 : The same two characters appearing twice in a row. Some examples could be "mgmg" or "cdcd"
+    
+#"(.).\\1.\\1" : A character, then another character, the first character, then another character, and then the first character again.
+str_subset(words, "(.).\\1.\\1")
+  
+    
+#(.)(.)(.).*\\3\\2\\1 : Three characters, then any character(s) or none, then the same three characters from the beginning but backwards.
+str_subset(words, "(.)(.)(.).*\\3\\2\\1")
+```  
+  
+
+4. Construct regular expressions to match words that:
+
+```{r}
+
+#Start and end with the same character. 
+str_subset(words, "^(.).*\\1+$")
+
+#Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+str_subset(words, "(..).+\\1")
+
+#Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s._
+str_subset(words, "(.)+.+\\1.+\\1")
+
+```
+
+
+
+## Conclusions
+
+In this week's assignment we learned about normalization (1NF, 2NF, 3NF, 4NF, and 5NF) and how to create examples of them which is important for relational databases (e.g. FileMaker). In the future, I would try using the rules on normalization with real data. The second part of the assignment is character manipulation using regular expressions to find or match strings in a dataset. Character manipulation is useful for data cleaning and analysis, an example with real data would be taking the ID from the name of a csv. as a string and adding it into the dataset as a variable. 
+
+
