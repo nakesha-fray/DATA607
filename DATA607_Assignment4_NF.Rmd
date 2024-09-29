@@ -1,0 +1,90 @@
+---
+title: "Data607: Assignment 4"
+author: "Nakesha Fray"
+date: "2024-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readr)
+library(janitor)
+library(dplyr)
+library(tidyr)
+```
+
+## Introduction
+
+For this week's assignment, we dived into tidy data. Oftentimes we will receive data from a wide range of sources and most of the time it requires cleaning. A part of cleaning includes tidying the data into a more usable structure where each column and row in the dataset represents a variable and observation, respectively. I will use tidyr and dplyr to tidy and transform the data about airlines and then perform analysis to draw conclusions from the data.
+
+
+```{r airlines}
+#Read in csv. file
+
+airlines<- read.csv("C:\\Users\\nakes\\OneDrive\\Documents\\DATA607\\airlines.csv")
+
+tibble(airlines)
+```
+
+## Clean, Tidy, and Transform
+
+For the tidy and transform portion, I first removed the row that was originally a blank row in our csv. and then I populated the other cells in the variable X with the appropriate airline. Most the variables were then renamed to provide a better name (X and X.1) or to a better format to transform. I then used pivot_longer to transform the data long, specifically the destinations. This made our data very long but still not in the format needed for analysis, I decided to use pivot_wider to transform the arrivals (on time and delayed) wider. The final tidy dataset is now longer but separated by arrival delays to provide an easier way to do our analysis in the next section.
+
+```{r tidy}
+#Remove row of NAs 
+airlines <- airlines[c(1,2,4,5), c(1:7)]
+
+#Populate the other cells with ALASKA and AM WEST
+airlines[c(2,4),1] <- airlines[c(1,3),1]
+
+#Rename variables and transform data longer
+airlines2<- airlines %>%
+  rename(airline = X,
+         arrival = X.1,
+         "Los Angeles" = "Los.Angeles",
+         "San Diego" = "San.Diego",
+         "San Francisco" = "San.Francisco") %>%
+  pivot_longer(cols=c('Los Angeles', 'Phoenix', 'San Diego', 'San Francisco', 'Seattle'),
+               names_to = "destination",
+               values_to = "flights")
+
+#Transform the arrival flights to wide
+airlines3<- airlines2 %>% 
+  pivot_wider(names_from = arrival, 
+    values_from = flights)
+
+tibble(airlines3)
+```
+
+## Data Analysis
+
+For the analysis portion, I looked at the percent of delayed flights by destination to see if there was a difference by airline. I created a variable total_flights to sum the flights on time and the flights delayed. Then I created percent_delayed to find the percent of flights delayed by destination and airline. To make it a little more easier to visualize, I created a bar plot of the percent delayed. We can see that for every destination, the percent of delayed flights are greater for the AM WEST airline. It is especially notable for flights to San Francisco and Seattle. Therefore, to avoid delays a person might choose to fly with ALASKA over AM WEST airline. 
+
+```{r analysis}
+
+#Create a variable of the percent of delayed flights 
+airlines4 <- airlines3 %>%
+  clean_names() %>%
+  mutate(total_flights = on_time + delayed,
+         percent_on_time = round(on_time/total_flights*100, 2),
+         percent_delayed = round(delayed/total_flights*100, 2))
+
+data.frame(airlines4)
+ 
+#Plot the percentage of delayed flights by destination 
+ggplot(data=airlines4, aes(x=destination, y=percent_delayed, fill=airline)) +
+  ggtitle("Proportion of Delayed Flights by Destination") +
+   ylab("Percent of Delayed Flights") + xlab("Destination")+
+  scale_fill_brewer(palette = "Set1") +
+         geom_col(position = "dodge")
+
+```
+
+
+## Conclusion
+
+Data tidying is an important step in trying to draw conclusions from our data. In this assignment, we took an untidy dataframe about airlines and transformed it long then wide to produced a dataframe where we can perform analysis. In our analysis we created new variable to look at percent of delayed flights and then graphed it. From our tidying and analysis of the data, we drew conclusions about which airline may be preferable to avoid delays flying out to LA, Phoenix, San Diego, San Francisco, or Seattle. It may be useful to look at how the delays differ from flights to the East Coast by airline to see if AM WEST will still have a larger percent of delays compared to ALASKA airline.
+
+
