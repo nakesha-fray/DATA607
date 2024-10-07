@@ -1,0 +1,149 @@
+---
+title: "Project 1: Data Analysis"
+author: "Nakesha Fray"
+date: "2024-10-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(stringr) 
+library(dplyr)
+
+```
+
+## Introduction
+
+For this week's project, I will be importing a text file of chess tournament results to then use the information to create a csv. file with the variables; Player’s Name, Player’s State, Total Number of Points, Player’s Pre-Rating, and Average Pre Chess Rating of Opponents.
+
+I first imported the text file using 'read.table' which imported the file with 1 variable and 195 observations.
+
+```{r tournaments}
+tournament <- read.table("C:\\Users\\nakes\\OneDrive\\Desktop\\607\\tournamentinfo.txt", sep="\t", header=TRUE, col.names = "all")
+
+```
+
+## Tidy Data and Create Seperate Datasets
+
+I cleaned and tidyed the dataset a little by removing rows that were dashes. Then I created two datasets: df.t1 and df.t2. The df.t1 dataset has all the player ids, player names, total points and each opponent for the rounds. The df.t2 dataset has the state and each players pre-ratings. Creating two separate datasets makes it easier to extract the variables we need later on to combine.
+
+```{r remove rows}
+
+#Remove all the rows with dashes
+
+t1 <- tournament %>%
+  filter(!str_detect(all, pattern = "---"))
+
+#Extract every other row
+
+df.t1 <- data.frame(t1[seq(3, nrow(t1), 2), ])
+
+df.t2 <- data.frame(t1[seq(4, nrow(t1), 2), ])
+
+```
+
+
+## Extract data
+
+In this next step, I used 'substr' to pull out specific length strings as different variables from df.t1 and df.t2. Then I changed the strings to individual dataframes to combine all the variables together.
+
+```{r extract}
+
+#Extract the all the variables from df.new and df.other
+
+id <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 2, stop = 5))
+
+player_name <- (substr(df.t1$t1.seq.3..nrow.t1...2...., start = 9, stop = 35))
+
+player_state <- (substr(df.t2$t1.seq.4..nrow.t1...2...., start = 2, stop = 5))
+
+total_points <- (substr(df.t1$t1.seq.3..nrow.t1...2...., start = 42, stop = 45))
+
+player_pre_rating <- as.numeric(substr(df.t2$t1.seq.4..nrow.t1...2...., start = 22, stop = 26))
+
+round1 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 50, stop = 52))
+round2 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 55, stop = 58))
+round3 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 61, stop = 64))
+round4 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 67, stop = 70))
+round5 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 73, stop = 76))
+round6 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 79, stop = 82))
+round7 <- as.numeric(substr(df.t1$t1.seq.3..nrow.t1...2...., start = 85, stop = 88))
+
+#Change all of the extracted strings to a dataframe
+
+df1 <- data.frame(id)
+df2 <- data.frame(player_name)
+df3 <- data.frame(player_state)
+df4 <- data.frame(total_points)
+df5 <- data.frame(player_pre_rating)
+df6 <- data.frame(round1)
+df7 <- data.frame(round2)
+df8 <- data.frame(round3)
+df9 <- data.frame(round4)
+df10 <- data.frame(round5)
+df11 <- data.frame(round6)
+df12 <- data.frame(round7)
+
+# Combine all the dataframes into one dataframe
+
+data <- cbind(df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12)
+
+print(data)
+```
+
+## Create new variables
+
+In the step, I created 7 new variables, round1_opp to round7_opp in the dataframe 'data'. I used 7 loops to cycle through the data frame and input a value of the Players Pre-Rating in each correlating round using the rows. Then I used rowMean to calculate the Average Pre Chess Rating of Opponents, rounded the mean, and then selected only the variables I wanted to keep to export as a csv.
+
+
+```{r}
+
+# Create a loop for the 7 new variables using round and nrow 
+
+for (row in 1:nrow(data))
+data$round1_opp[row] <- data$player_pre_rating[data$round1[row]]
+
+for (row in 1:nrow(data))
+data$round2_opp[row] <- data$player_pre_rating[data$round2[row]]
+
+for (row in 1:nrow(data))
+data$round3_opp[row] <- data$player_pre_rating[data$round3[row]]
+
+for (row in 1:nrow(data))
+data$round4_opp[row] <- data$player_pre_rating[data$round4[row]]
+
+for (row in 1:nrow(data))
+data$round5_opp[row] <- data$player_pre_rating[data$round5[row]]
+
+for (row in 1:nrow(data))
+data$round6_opp[row] <- data$player_pre_rating[data$round6[row]]
+
+for (row in 1:nrow(data))
+data$round7_opp[row] <- data$player_pre_rating[data$round7[row]]
+
+# Find mean for a new variable avg_pre_chess_rating
+
+data$mean <- rowMeans(data[,13:19], na.rm=TRUE)
+
+data$avg_pre_chess_rating <- round(data$mean)
+
+print(data)
+
+#Select only the variables we want in new dataframe
+
+df = subset(data, select = c(player_name, player_state, total_points, player_pre_rating, avg_pre_chess_rating) )
+
+print(df)
+
+#write csv.
+
+write.csv(df,"C:\\Users\\nakes\\OneDrive\\Desktop\\607\\data607_chess_project1.csv")
+
+```
+
+## Conclusion
+
+I was able to create the final dataset using the materials from our 607 class and the information available to us online. In the final dataset we have: Player’s Name (player_name), Player’s State (player_state), Total Number of Points (total_points), Player’s Pre-Rating (player_pre_rating), and Average Pre Chess Rating of Opponents (avg_pre_chess_rating). This dataset is now more easy to use and manipulate as csv. and dataframe to plot or do some descriptive analysis.
+
