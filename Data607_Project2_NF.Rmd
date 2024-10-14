@@ -1,0 +1,218 @@
+---
+title: "DATA 607: Project 2"
+author: "Nakesha Fray"
+date: "2024-10-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readr)
+library(readxl)
+library(janitor)
+library(dplyr)
+library(tidyr)
+```
+
+## Introduction
+
+For this week's project, I will be reading in three different datasets to clean and tidy, then do some analysis. The three datasets are: World Population, MTA Daily Ridership, and Candy Hierarchy. I computed a similar analysis for all of the datasets which was visualization.
+
+## Dataset and Analysis 1: World Population
+
+The world population dataset includes world populations of different continents, countries/territories, and capitals spanning several decades - specifically 1970 to 2022. It also includes 'Area (kmÂ²)',	'Density (per kmÂ²)',	'Growth Rate', and 'World Population Percentage.'
+ 
+```{r echo =TRUE}
+world_pop <- read.csv("C:\\Users\\nakes\\OneDrive\\Desktop\\607\\world_population.csv")
+
+head(world_pop, 4)
+```
+
+Tidy Data
+
+In order to tidy this dataset, I transformed the dataset long because the populations per year were all separate variables. Now there is a variable for year and another for the population per year. Transforming the dataset long allows us to look at the population of the world by year, to look at growth.
+
+```{r}
+world_pop2<-pivot_longer(data = world_pop,
+                         cols = starts_with('X'),
+                         names_to = "Year",
+                         values_to = "Population per year",
+                         names_pattern = '([0-9]+)') %>%
+  janitor::clean_names()
+
+head(world_pop2, 4)
+
+```
+
+Analysis
+
+In my analysis, the first plot shows how much of the entire world's population percentage is made up by each continent. In the second graph, I plotted the population per year by continent.
+
+```{r}
+#World population
+ggplot(data=world_pop2, aes(x=continent, y=world_population_percentage)) +
+  ggtitle("World Population of Each Continent") +
+   ylab("Worl Population percentage") + xlab("Continent")+
+  scale_fill_brewer(palette = "Set3") +
+         geom_col(position = "dodge")
+
+#Population per year
+ggplot(data=world_pop2, aes(x=continent, y=population_per_year, fill=year)) +
+  ggtitle("Population of Each Continent by Year") +
+   ylab("Population") + xlab("Continent")+
+  scale_fill_brewer(palette = "Set3") +
+         geom_col(position = "dodge")
+
+```
+
+For the world population, we can see that Asia makes up most the population for the entire world, followed by North America. Oceania makes up the smallest percentage.
+
+For the population by year, we can see that the continents that had a increase in population size was Africa, Asia, South American, and North America, while Europe and Oceania mostly stayed the same.
+
+## Dataset and Analysis 2: MTA Daily Ridership Data: Beginning 2020 
+
+The world population dataset includes daily riderships from difference modes of transportation from 2020 to 2024. The modes of transportation includes subways, buses, the lirr, the metro north, access-a-ride, bridges and tunnels, and the staten island railroad. The dataset also includes percent of comparable ridership pre-pandemic. 
+
+```{r}
+ride <- read_xlsx("C:\\Users\\nakes\\OneDrive\\Desktop\\607\\MTA_Daily_Ridership_Data__Beginning_2020_20240930.xlsx")
+
+head(ride, 3)
+
+```
+
+Tidy Data
+
+In order to tidy this dataset, I transformed the dataset long because the modes of transportation could have been one variable instead of separate ones. I transformed the variables separately in two different dataset. The first with data, mode of transport, and total ridership. The second with date, mode of transport, and percent of comparable pre pandemic ridership. Then I merged them together by date and mode of transport. Transforming the dataset long allows us to look at the mode of transportation by year, to see the how the trends changed.
+
+```{r}
+
+ride <-ride %>% clean_names()
+  
+ride2 <- ride %>%
+pivot_longer(cols=c('subways_total_estimated_ridership', 'buses_total_estimated_ridership', 'lirr_total_estimated_ridership', 'metro_north_total_estimated_ridership', 'access_a_ride_total_scheduled_trips', 'bridges_and_tunnels_total_traffic', 'staten_island_railway_total_estimated_ridership'),
+                         names_to = "mode_of_transport", 
+                         values_to = "total_ride_trip",
+                         names_pattern = '([A-Za-z]+)') %>%
+  select(date,mode_of_transport, total_ride_trip)
+
+ride3 <- ride%>%
+ pivot_longer(cols=c('subways_percent_of_comparable_pre_pandemic_day', 'buses_percent_of_comparable_pre_pandemic_day', 'lirr_percent_of_comparable_pre_pandemic_day', 'metro_north_percent_of_comparable_pre_pandemic_day', 'access_a_ride_percent_of_comparable_pre_pandemic_day', 'bridges_and_tunnels_percent_of_comparable_pre_pandemic_day', 'staten_island_railway_percent_of_comparable_pre_pandemic_day'),
+                         names_to = "mode_of_transport", 
+                         values_to = "pre_pandemic_percent",
+                         names_pattern = '([A-Za-z]+)')  %>%
+    select(date,mode_of_transport, pre_pandemic_percent)
+
+ride4 <- merge(ride3,ride2,by.ride2=c('date','mode_of_transport'), by.ride3=c('date','mode_of_transport'))
+
+head(ride4, 7)
+
+```
+
+Analysis
+
+For the analysis, the goal is to look at ridership over the years by mode of transportation. I pulled out date from the date variable then created two mean variables of both total ridership and pre pandemic percent by year and mode of transport. Then I plotted both in two separate graphs.
+
+
+```{r}
+ride4 <- ride4 %>%
+  mutate(year = year(date))
+
+ride5 <- ride4 %>%
+  group_by(year, mode_of_transport) %>%
+  summarize(mean_total_ride = mean(total_ride_trip))
+
+ggplot(data=ride5, aes(x=year, y=mean_total_ride, fill=mode_of_transport)) +
+  ggtitle("Estimated Average Ridership by Year ") +
+   ylab("Estimated AVerage Count of Rides or Trips") + xlab("Year") +
+  scale_fill_brewer(palette = "Set1") +
+         geom_col(position = "dodge")
+
+ride6 <- ride4 %>%
+  group_by(year, mode_of_transport) %>%
+  summarize(mean_prepand = mean(pre_pandemic_percent))
+
+ggplot(data=ride6, aes(x=year, y=mean_prepand, fill=mode_of_transport)) +
+  ggtitle("Average Percent Comparable Ridership Pre Pandemic by Year ") +
+   ylab("Average Comparable Riderships Percent") + xlab("Year") +
+  scale_fill_brewer(palette = "Dark2") +
+         geom_col(position = "dodge")
+
+```
+
+From the Estimated Average Ridership by Year, we can see that subways were the most popular mode of transportation from 2020 to 2024 and have been increasing except from 2023 to 2024. It looks like most of the modes of transportation increased over the past few years. Buses shifted from third to second place from 2020 to 2021, then continued in second. The least used mode of transportation is the metro north.
+
+For the Average Percent Comparable Ridership Pre Pandemic by Year, it seems like access-a-ride increased the most. Most of other modes of transportation also increased, however, it looked like buses dropped.
+
+Data 3: Candy Hierarchy Survey from 2017
+
+The last dataset I chose was the candy hierarchy from 2017 which was a survey about people's preference of candies they received on Halloween. The original dataset includes questions about whether or not the participant was going out for Halloween, gender, age, country, state/province/county, and then a list of many different candies where participants can choose how they feel about receiving this candy on Halloween with MEH for indifference, JOY for happy, and DESPAIR for they probably did not want it. 
+
+```{r}
+candy <- read.csv("C:\\Users\\nakes\\OneDrive\\Desktop\\607\\candyhierarchy2017.csv", header = TRUE, check.names = F)
+
+head(candy, 2)
+```
+
+Tidy
+
+This dataset was a little difficult to work with because it was a non-research intended survey where participants can input almost any response, and some the candies were not candy.
+
+I decided to create my own question which was how do people feel about popular chocolate bars and candies. In order to tidy the dataset, I first renamed all the chocolate bars I considered to be popular, then transformed these candies longer into one variable since they were all separate variables. Then I filtered out missing responses to how people felt about these candy bars since participants had the option to skip responses. Transforming the dataset long allows us to look at ratings of each candy by popular candy bar, to access which is preferred over the other.
+
+
+```{r}
+
+candy <- candy %>%
+  clean_names() %>%
+  rename(
+         "100 Grand Bar" = q6_100_grand_bar,
+         "Butterfinger" = q6_butterfinger, 
+         "Heath Bar" = q6_heath_bar,
+         "Kit Kat" = q6_kit_kat,
+         "Nestle Crunch" = q6_nestle_crunch,
+         "Reeses Pieces" = q6_reeses_pieces,
+         "Snickers" = q6_snickers, 
+         "Twix" = q6_twix, 
+         "Milky Way" = q6_milky_way, 
+         "Peanut M&MS"= q6_peanut_m_m_s, 
+         "Hersheys Milk Chocolate" = q6_hershey_s_milk_chocolate)
+
+candy2 <- candy %>%
+pivot_longer(cols=c('100 Grand Bar', 'Butterfinger', 'Heath Bar', 'Kit Kat', 'Nestle Crunch', 'Reeses Pieces', 'Snickers', 'Twix', 'Milky Way', 'Peanut M&MS', 'Hersheys Milk Chocolate'),
+                names_to = "candy", 
+                values_to = "candy_rating") %>%
+    select(internal_id, candy, candy_rating)
+
+candy3 <- candy2 %>%
+   filter(candy_rating!="")
+
+head(candy3, 10)
+
+```
+
+Analysis
+
+For my analysis, I created a count of candy_rating while grouping by candy bar and candy rating. Then plotted the results to see how participants generally feel about popular candy bars.
+
+``` {r}
+candy5 <- candy3 %>%
+group_by(candy, candy_rating) %>%
+  reframe(count_rating = table(candy_rating))
+
+ggplot(data=candy5, aes(x=candy, y=count_rating, fill = candy_rating)) +
+  ggtitle("Ratings of Popular Chocolate Candy and Bars in 2017 ") +
+   ylab("Number of Ratings") + xlab("Chocolate Candy/Bar") +
+  scale_fill_brewer(palette = "Set1") +
+         geom_col(position = "dodge") +
+    theme(axis.text.x = element_text(angle=60, hjust=1))
+
+```
+
+From my plot, we can see that for JOY, the most popular chocolate candy bar is Kit Kat, followed by Snickers and Twix. For DESPAIR, the highest rating is Hersey's Milk Chocolate and for MEH, the highest rating is 100 Grand Bars.
+
+## Conclusion
+
+In project 2, three very dissimilar datasets were imported, tidied, cleaned, and analyzed. The first dataset was easier to tidy and clean compared to the last two. In the future, I would try a different analysis to possibly look at correlations. 
+
