@@ -1,0 +1,139 @@
+---
+title: "Data 607: Assignment 7"
+author: "Nakesha Fray"
+date: "2024-10-15"
+output: html_document
+---
+
+## Introduction
+
+For this week's assignment, we experimented with different data types - specifically HTML, JSON, XML, and Parquet. I chose to build the dataframe from CUNYMart in R, and then convert my dataframe to the other datatypes to export. Then I listed some pros and cons of each data type.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+```
+
+Build CUNYMart dataframe in R
+
+For this step I created vectors for Category, Item Name, Item ID, Brand, Price, Variation ID, and Variation Details from the information provide in the PDF. Then I combined all the vectors into one dataframe called dep_store.
+
+```{r}
+
+cate <- rep(c("Electronics","Home"), each = 4)
+cate2 <- rep(c("Clothing"), times = 5)
+cate3 <- rep(c("Books"), times = 4)
+cate4 <- rep(c("Sports Equipment"), times = 3)
+category <- c(cate, cate2, cate3, cate4)
+
+item_name <- c("Smartphone", "Smartphone", "Laptop", "Laptop", "Refrigerator", "Refrigerator", "Washing Machine", "Washing Machine", "T-Shirt", "T-Shirt", "T-Shirt", "Jeans", "Jeans", "Fiction Novel","Fiction Novel", "Non-Fiction Guide", "Non-Fiction Guide", "Basketball", "Tennis Racket", "Tennis Racket")
+
+item_id <- c(101, 101, 102, 102, 201, 201, 202, 202, 301, 301, 301, 302, 302, 401, 401, 402, 402, 501, 502, 502)
+
+brand <- c("TechBrand", "TechBrand", "CompuBrand", "CompuBrand", "HomeCool", "HomeCool", "CleanTech", "CleanTech", "FashionCo", "FashionCo", "FashionCo", "DenimWorks", "DenimWorks", "-", "-", "-", "-", "SportsGear", "RacketPro", "RacketPro")
+
+price <- c("699.99", "699.99", "1099.99", "1099.99", "899.99", "899.99", "499.99", "499.99", "19.99", "19.99", "19.99", "49.99", "49.99", "14.99", "14.99", "24.99", "24.99", "29.99", "89.99", "89.99")
+
+variation_id <- c("101-A", "101-A", "102-A", "102-A", "201-A", "201-B", "202-A", "202-B", "301-A", "301-B", "301-B", "302-A", "302-B", "401-A", "401-B", "402-A", "402-B", "501-A", "502-A", "502-B")
+
+variation_details <- c("Color: Black, Storage: 64GB", "Color: White, Storage: 128GB", "Color: Silver, Storage: 256GB", "Color: Space Gray, Storage: 512GB", "Stainless Steel, Capacity: 20 cu ft", "Color: White, Capacity: 18 cu ft", "Type: Front Load, Capacity: 4.5 cu ft", "Type: Top Load, Capacity: 5.0 cu ft", "Color: Blue, Size: S", "Color: Red, Size: M", "Color: Green, Size: L", "Color: Dark Blue, Size: 32", "Color: Light Blue, Size: 34", "Format: Hardcover, Language: English", "Format: Paperback, Language: Spanish", "Format: eBook, Language: English", "Format: Paperback, Language: French", "Size: Size 7, Color: Orange", "Material: Graphite, Color: Black", "Material: Aluminum, Color: Silver")
+
+dep_store <- data.frame(category, item_name, item_id , brand, price, variation_id , variation_details)
+
+```
+
+
+## HTML
+
+For HTML, I used knitr to change dep_store to an html format using kable, then exported the file in an HTML format.
+
+```{r}
+
+library(knitr)
+
+
+html_dep_store <- kable(dep_store, format = "html", table.attr = "class='table'")
+
+html_dep_store 
+
+cat(html_dep_store, file = "C:\\Users\\nakes\\OneDrive\\Desktop\\607\\data_dep_store.html")
+
+```
+
+Pros of HTML: It is easy to use and knit to in R, it is widely used on websites, and it is effective for presenting data.
+Cons of HTML: Simple errors can mess up output/websites, and complex code need for different formats/styles.
+
+## JSON
+
+For JSON, I used jsonlite to change dep_store to a JSON format using toJSON, then exported the file in a JSON format.
+
+
+```{r json}
+
+library(jsonlite)
+
+toJSON(x = dep_store, dataframe = 'rows', pretty = T)
+
+write_json(dep_store, "C:\\Users\\nakes\\OneDrive\\Desktop\\607\\data_dep_store.json", pretty = TRUE)
+
+```
+
+Pros of JSON: Easy to create and understand, readable for each observation, and commonly used for API calls.
+Cons of JSON: Not the best for large datasets or looking at variables.
+
+## XML
+
+For XML, I used xml, dplyr, and xml to change dep_store to a XML format using a loop and xmltree, then saved and exported the new xml data.
+
+```{r xml}
+
+library(XML)
+library(dplyr)
+library(xml2)
+
+
+xml_dep_store<- xmlTree("Department Store")
+for (i in 1:nrow(dep_store)) {
+  xml_dep_store$addNode(" ",
+                   attrs = c(category = dep_store$category[i],
+                            item_name = dep_store$item_name[i],
+                            item_id = dep_store$item_id[i],
+                            brand = dep_store$brand[i],
+                            prive = dep_store$price[i],
+                            variation_id = dep_store$variation_id[i],
+                            variation_dtails = dep_store$variation_details[i]
+                             ))
+}
+
+
+cat(saveXML(xml_dep_store))
+
+saveXML(xml_dep_store, file="C:\\Users\\nakes\\OneDrive\\Desktop\\607\\data_dep_store.xml")
+
+```
+
+Pros of XML: Each to understand by observation and used as a tool for storing and transporting data.
+Cons of XML: Difficult to convert dataframe to xml in R and requires more than one library to create desired XML format in R.
+
+## PARQUET
+
+For PARQUET, I exported the data into a parquet file using arrow and write_parquet.
+
+```{r}
+
+library(arrow)
+
+write_parquet(dep_store, "C:\\Users\\nakes\\OneDrive\\Desktop\\607\\dep_data.parquet")
+
+```
+
+Pros of PARQUET: Faster to read in data, easy to work with, and smaller in size compared to HTML.
+Cons of PARQUET: Difficult to understand raw file
+
+## Conclusion
+
+Each data type: JSON, HTML, XML, and PARQUET is all useful for different purposes since they all have pros and cons. In the future, I would import the data in these different formats then try working with them in R.
+
+
