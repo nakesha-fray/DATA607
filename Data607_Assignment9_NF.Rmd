@@ -1,0 +1,36 @@
+---
+title: "Data 607: Assignment 9"
+output: html_document
+date: "2024-11-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(jsonlite)
+library(httr)
+library(tidyverse)
+```
+
+## Introduction
+
+This week's assignment focuses on APIs - I choose from one New York Times APIs, specifically top stories in the US today. I used jsonlite and htrr to construct an interface in R to read in the JSON data, and transform it into an R dataframe after signing up for an API key.
+
+```{r}
+
+api_key <- "SCbzgkvE2BUSqcw0eH2tdMgMF4fCESjz"
+top_stories <- paste0("https://api.nytimes.com/svc/topstories/v2/us.json?api-key=", api_key)
+
+top_stories <- GET(top_stories)
+
+stories_text <- content(top_stories, as = "text", encoding = "UTF-8")
+
+stories_df <-fromJSON(stories_text) %>% as.data.frame
+
+stories_df$results.title
+
+```
+
+## Conclusion
+
+The dataframe I pulled from the NYT API has 24 observations and 24 variables. I took a quick look at the titles of the 24 current articles in the US, and found that most of the top stories were about the 2024 election. In the future, I would look at how top us articles compare to world articles, or even look at other methods to read in JSON data and transform it into a dataframe.
