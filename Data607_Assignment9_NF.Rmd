@@ -18,7 +18,7 @@ This week's assignment focuses on APIs - I choose from one New York Times APIs, 
 
 ```{r}
 ## Removed API Key from code
-api_key <- "--------Sjz"
+api_key <- "--------"
 top_stories <- paste0("https://api.nytimes.com/svc/topstories/v2/us.json?api-key=", api_key)
 
 top_stories <- GET(top_stories)
