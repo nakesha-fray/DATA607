@@ -1,0 +1,58 @@
+---
+title: "Data 607: Week 11 - Recommender Systems"
+author: Nakesha Fray
+output: html_document
+date: "2024-11-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction for Scenario Design Analysis
+
+
+For week 11, I have chosen a dating app as a recommender system: Hinge. 
+
+Hinge is an online dating app released sometime in 2012. The way Hinge works, or dating apps in general is after downloading the app, you are required to fill out information about yourself. 
+
+The information collected is typically demographics (name, age, gender, location), dating preferences (sexual orientation), images, and random facts/interest about yourself. 
+
+Some dating apps like Hinge require individuals to fill a at least 'n' number of prompts and upload 'n' number of pictures. Hinge uses all the information you filled out within the app, as well as your tendency to swipe/reject potential matches to produce an algothrim (Gale-Shapley algorithm) to suggest matches.
+
+
+## Who Are Your Target Users?
+
+The target user/audience for dating apps are adults looking for short-term relationship, long-term relationships, or even casual encounters. However, Hinge's motto is, this is the dating app that is designed to be deleted. Essentially, it is trying to help individuals find long term partners. According to Pew Research, 30% of adults have used a dating app at some point in their life - 53% of those under age 30. Dating apps are generally targeted towards younger adults than older adults (https://www.pewresearch.org/short-reads/2023/02/02/key-findings-about-online-dating-in-the-u-s/)
+
+A user can match with another person only if both individuals like each other picture(s)/prompt(s). Users also have the option to send each other roses - each user receives one free rose weekly but have the option to purchase a rose if they run out.
+
+## What Are Their Key Goals?
+
+The key goals of the user is to find potential matches that align with their interest. The key goals of the app creator is ensure that users find potential matches using an their algorithm (which shows people based on their interest and rejects as well as likes), to essential have the consumer delete the dating app. 
+
+
+## How Can You Help Them Accomplish Those Goals?
+
+There are a number of ways dating app creators can accomplish their goals - or the main goal of finding matches for users. 
+
+- Creating or improving the interface in way that makes it more user-friendly to appeal to individual of different age groups.
+-Make the process to create a profile simple and efficient.
+-Create examples and pointers to creating a profile (e.g. example answers to prompt, fake example pictures/selfies, tips to taking a quality picture)
+-Improve options for interacting with someone else's profile beyond liking an image/responding to a prompt
+-Push notifications on matches/chats
+-Easy to use chat/audio/video options (e.g. making it similar to a text message or FaceTime).
+-Easy to share other social medias (e.g. Instagram)
+-Account for safety for blocking and removing matches or even reporting harassment.
+
+## Reverse Engineering
+
+I have helped/seen friends build a dating profile on Hinge and looked for matches with them. An aspect of using Hinge and many other dating apps is that many of the information is required and you cannot move forward without filling out every single detail require which often time could make someone not create a profile.
+
+### Recommendations for Improvement
+
+Hinge and other dating apps could allow individuals to fill required portions of the app later. Essentially, this would help push users to make a profile instead of turning away potential users. However, since a lot of the required fields are probably necessary for the algorithm to produce matches - users should be forced to input the missing data in the app. For example, after 3 matches using created the app - users must input missing data before being allowed to look at other profiles or get new matches. User now would have the opportunity to get into the app, meet people, possibly like the app, and have the motivation to continue to use the dating app.
+
+
+## Conclusion
+Dating apps have sky rocketed in the past few years, as people have become too busy to find potential partners. However, Hinge like other dating apps could use some improvement in the on-boarding process to draw in more people to the app.
