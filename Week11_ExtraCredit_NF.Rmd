@@ -1,0 +1,104 @@
+---
+title: "Week 11: Extra Credit"
+author: "Nakesha Fray"
+output: html_document
+date: "2024-11-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(DT)
+```
+
+## Introduction
+
+For this week's extra credit, I used the excel spreadsheet with movie ratings to implement a Global Baseline Estimate recommendation system. Essentially, this uses the ratings of the movies each critic watched and the average movie ratings to predict the ratings of movies the critic has not watched. 
+
+Read in the Movie dataset but only include the first sheet, which has the movies, movie ratings, and the critics.
+
+```{r}
+movie <- read_excel("C:\\Users\\Kesha\\Desktop\\607\\MovieRatings.xlsx", sheet = "MovieRatings")
+
+datatable(movie)
+```
+
+Create a new dataset and pivot the ratings of all the movies longer. Then find the mean of all the movies. The mean of the movies is a new variable in the dataset but also a value (for future calculations). 
+
+```{r}
+movie2 <- movie %>%
+  pivot_longer(cols=c('CaptainAmerica', 'Deadpool', 'Frozen', 'JungleBook', 'PitchPerfect2','StarWarsForce',),
+               names_to='all_movies',
+                values_to='movie_ratings')
+
+mean_movies <- colMeans(movie2[, -c(1, 2)], na.rm = TRUE)
+
+movie2$mean_movies <- colMeans(movie2[, -c(1, 2)], na.rm = TRUE)
+
+datatable(movie2)
+
+```
+
+Group by critic and create a new dataset to find the mean ratings per critic. Then find the difference between each critic's mean rating and the mean of all movies.
+
+```{r}
+
+critic_mean <- movie2 %>% 
+        group_by(Critic) %>% 
+        summarise(critic_mean = mean(movie_ratings,  na.rm = TRUE)) 
+
+critic_mean$critic_diff <- critic_mean$critic_mean - mean_movies
+
+datatable(critic_mean)
+
+```
+
+Group by movies and create a new dataset to find the mean ratings per movie. Then find the difference between each movie's mean rating and the mean of all movies.
+
+```{r}
+
+movie_mean <- movie2 %>% 
+        group_by(all_movies) %>% 
+        summarise(movie_mean = mean(movie_ratings, na.rm = TRUE))
+
+movie_mean$movie_diff <- movie_mean$movie_mean - mean_movies
+
+datatable(movie_mean)
+
+```
+
+Merge the original dataset (movie2) with the critic mean dataset and the movie mean dataset.
+```{r}
+movie2_criticmean <- merge(movie2, critic_mean , by = "Critic", all = TRUE)
+
+movie3 <- merge(movie2_criticmean, movie_mean , by = "all_movies", all = TRUE)
+```
+
+
+Create a formula that adds up the mean of all movies, the critic difference and the movie difference to predict the ratings of unwatched movies for critics. Then create a new variable that inputs in the formula if the movie rating is missing for each critic or puts back in the same rating if it is not missing.
+
+```{r}
+
+n = movie3$mean_movies + movie3$critic_diff + movie3$movie_diff
+
+movie4 <- movie3 %>%
+  mutate(gbe = ifelse(is.na(movie_ratings), n, as.numeric(movie_ratings)))
+
+```
+
+Pivoting the movies and new Global Baseline Estimate ratings wider to recreate the original dataset.
+
+```{r}
+
+movie_final <- movie4 %>%
+  select(all_movies, Critic, gbe)%>%
+  pivot_wider(names_from = all_movies, values_from = gbe)
+
+datatable(movie_final)
+
+```
+
+## Conclusion
+
+Using the information provided to us in the movie excel document about calculating global baseline estimates, I was able to recreate the calculations by using a pivot_longer and separating the datasets to compute the means and differences. It would be interesting to try this with difference types of data or larger datasets.
